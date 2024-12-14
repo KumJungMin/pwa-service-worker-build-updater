@@ -1,19 +1,23 @@
 
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import TestMain from '../views/TestMain.vue';
+import TTestMain from '../views/TTestMain.vue';
+
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/test',
     alias: '/',
     name: 'TestMain',
-    component: () => import(/* @vite-ignore */ '../views/TestMain.vue'),
+    component: TestMain,
   },
   {
     path: '/test2',
     name: 'TTestMain',
-    component: () => import(/* @vite-ignore */ '../views/TTestMain.vue'),
+    component: TTestMain,
   },
 ];
+
 
 const router = createRouter({
   history: createWebHistory(),

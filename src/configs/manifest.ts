@@ -11,10 +11,10 @@ export function generateManifestPlugin(dirname: string) {
       for (const fileName in bundle) {
         const chunk = bundle[fileName];
         if (chunk.type === 'chunk') {
-          const routeNameMatch = fileName.match(/assets\/([^\/\-]+)-[^\/]+\.js/);
+          const fileNameMatch = fileName.match(/assets\/([^\/\-]+)-[^\/]+\.js/);
           
-          if (routeNameMatch) {
-            const routeName = routeNameMatch[1];
+          if (fileNameMatch && fileNameMatch[1] !== 'index') {
+            const routeName = fileNameMatch[1];
             manifest[routeName] = `${fileName}`;
             console.log(`Matched route: ${routeName} -> ${fileName}`);
           }

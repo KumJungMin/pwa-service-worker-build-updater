@@ -4,9 +4,6 @@ export const config = {
     strategies: 'injectManifest',
     injectRegister: 'inline',
     registerType: 'autoUpdate',
-    devOptions: {
-      enabled: true
-    },
     workbox: {
       sourcemap: true
     },

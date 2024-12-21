@@ -4,6 +4,7 @@ const routes = [
   {
     path: '/test',
     name: 'TestMain',
+    alias: '/',
     component: () => import('../views/TestMain.vue'),
   },
   {

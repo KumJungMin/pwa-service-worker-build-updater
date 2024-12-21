@@ -37,7 +37,6 @@ function checkBuildUpdate() {
 function checkRouteUpdate() {
   if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
-        console.log('Received a message from service worker: ', event.data);
         if (event.data.type === 'ROUTE_UPDATED') {
           const updatedRoute = event.data.route;
           showUpdateModal.value = true;

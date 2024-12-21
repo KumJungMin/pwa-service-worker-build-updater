@@ -38,7 +38,6 @@ async function checkRouteUpdate() {
   cachedManifest = await loadCachedManifest();
   try {
     const response = await fetch('/manifest.json', { cache: 'no-cache' });
-    console.log('Manifest fetch response:', response);
     const latestManifest: Record<string, string> = await response.json();
 
     console.table({

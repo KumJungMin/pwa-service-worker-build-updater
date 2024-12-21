@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
@@ -12,7 +11,6 @@ const routes = [
     name: 'TTestMain',
     component: () => import('../views/TTestMain.vue'),
   },
-  // 기타 라우트
 ];
 
 const router = createRouter({

@@ -7,38 +7,43 @@
       :route="updatedRoute"
       @close="showUpdateModal = false"
     />
+    <button @click="checkBuildUpdate">
+      빌드 업데이트 체크
+      </button>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue';
 import UpdateModal from './components/UpdateModal.vue';
 
-export default {
-  name: 'App',
-  components: {
-    UpdateModal,
-  },
-  data() {
-    return {
-      showUpdateModal: false,
-      updatedRoute: '',
-    };
-  },
-  created() {
-    if ('serviceWorker' in navigator) {
+const updatedRoute = ref('');
+const showUpdateModal = ref(false);
+
+onCreated();
+
+function onCreated() {
+  checkRouteUpdate();
+}
+
+function checkBuildUpdate() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.controller?.postMessage({
+      type: 'CHECK_FOR_BUILD_UPDATE',
+    });
+  }
+}
+
+function checkRouteUpdate() {
+  if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         console.log('Received a message from service worker: ', event.data);
         if (event.data.type === 'ROUTE_UPDATED') {
           const updatedRoute = event.data.route;
-          this.updatedRoute = updatedRoute;
-          this.showUpdateModal = true;
+          showUpdateModal.value = true;
+          updatedRoute.value = updatedRoute;
         }
       });
     }
-  },
-};
+}
 </script>
-
-<style>
-/* 전역 스타일링 (필요시 추가) */
-</style>

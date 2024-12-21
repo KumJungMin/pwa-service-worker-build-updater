@@ -12,10 +12,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed } from 'vue';
-
-export default defineComponent({
+<script>
+export default {
   name: 'UpdateModal',
   props: {
     route: {
@@ -23,26 +21,20 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props, { emit }) {
-    const message = computed(() => {
-      return `${props.route} 라우트 관련 파일이 업데이트되었습니다! 새로고침하시겠습니까?`;
-    });
-
-    const reload = () => {
-      window.location.reload();
-    };
-
-    const close = () => {
-      emit('close');
-    };
-
-    return {
-      message,
-      reload,
-      close,
-    };
+  computed: {
+    message() {
+      return `${this.route} 라우트 관련 파일이 업데이트되었습니다! 새로고침하시겠습니까?`;
+    },
   },
-});
+  methods: {
+    reload() {
+      window.location.reload();
+    },
+    close() {
+      this.$emit('close');
+    },
+  },
+};
 </script>
 
 <style scoped>

@@ -1,4 +1,4 @@
-
+<!-- src/App.vue -->
 <template>
   <div id="app">
     <router-view></router-view>
@@ -10,36 +10,33 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+<script>
 import UpdateModal from './components/UpdateModal.vue';
 
-export default defineComponent({
+export default {
   name: 'App',
   components: {
     UpdateModal,
   },
-  setup() {
-    const showUpdateModal = ref(false);
-    const updatedRoute = ref('');
-
-    onMounted(() => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
-          if (event.data.type === 'ROUTE_UPDATED') {
-            updatedRoute.value = event.data.route;
-            showUpdateModal.value = true;
-          }
-        });
-      }
-    });
-
+  data() {
     return {
-      showUpdateModal,
-      updatedRoute,
+      showUpdateModal: false,
+      updatedRoute: '',
     };
   },
-});
+  created() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        console.log('Received a message from service worker: ', event.data);
+        if (event.data.type === 'ROUTE_UPDATED') {
+          const updatedRoute = event.data.route;
+          this.updatedRoute = updatedRoute;
+          this.showUpdateModal = true;
+        }
+      });
+    }
+  },
+};
 </script>
 
 <style>

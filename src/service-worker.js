@@ -1,9 +1,12 @@
+import { precacheAndRoute } from 'workbox-precaching';
+
+precacheAndRoute(self.__WB_MANIFEST);
+
 const DB_NAME = 'manifest-db';
 const STORE_NAME = 'manifest-store';
 
 let cachedManifest = null;
 
-// IndexedDB 초기화
 async function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
@@ -23,7 +26,6 @@ async function openDB() {
   });
 }
 
-// IndexedDB에서 manifest 로드
 async function loadCachedManifest() {
   try {
     const db = await openDB();
@@ -44,7 +46,56 @@ async function loadCachedManifest() {
   }
 }
 
-// IndexedDB에 manifest 저장
+// Service Worker 설치 이벤트
+self.addEventListener('install', () => {
+  console.log('[Service Worker] Install event');
+  self.skipWaiting(); // 즉시 활성화
+});
+
+// Service Worker 활성화 이벤트
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activate event');
+  event.waitUntil(
+    (async () => {
+      cachedManifest = await loadCachedManifest();
+      try {
+        const response = await fetch('/manifest.json', { cache: 'no-cache' });
+        const latestManifest = await response.json();
+
+        console.table({
+          'Cached manifest': cachedManifest,
+          'Latest manifest': latestManifest,
+        });
+
+        const updatedRoutes = [];
+        for (const route in latestManifest) {
+          if (cachedManifest[route] && cachedManifest[route] !== latestManifest[route]) {
+            updatedRoutes.push(route);
+          }
+        }
+
+        if (updatedRoutes.length > 0) {
+          console.log('Updated routes detected:', updatedRoutes);
+
+          const clients = await self.clients.matchAll({ includeUncontrolled: true });
+          for (const client of clients) {
+            client.postMessage({
+              type: 'ROUTE_UPDATED',
+              routes: updatedRoutes,
+            });
+          }
+        }
+        await saveManifest(latestManifest);
+        cachedManifest = latestManifest;
+        await self.clients.claim();
+      } catch (error) {
+        console.error('Error fetching or processing manifest.json:', error);
+      }
+    })(),
+  );
+});
+
+
 async function saveManifest(manifest) {
   try {
     const db = await openDB();
@@ -64,55 +115,10 @@ async function saveManifest(manifest) {
   }
 }
 
-// Service Worker 설치 이벤트
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installed');
-  self.skipWaiting(); // 즉시 활성화
-});
-
-// Service Worker 활성화 이벤트
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activated');
-  event.waitUntil(
-    (async () => {
-      cachedManifest = await loadCachedManifest();
-      try {
-        const response = await fetch('/manifest.json', { cache: 'no-cache' });
-        const latestManifest = await response.json();
-
-
-        console.log('Manifest fetched:', latestManifest);
-
-        console.log('Cached manifest:', cachedManifest);
-        console.log('Latest manifest:', latestManifest);
-
-        const updatedRoutes = [];
-        for (const route in latestManifest) {
-          if (cachedManifest[route] && cachedManifest[route] !== latestManifest[route]) {
-            updatedRoutes.push(route);
-          }
-        }
-
-        if (updatedRoutes.length > 0) {
-          console.log('Updated routes detected:', updatedRoutes);
-
-          // 클라이언트에 메시지 전달
-          const clients = await self.clients.matchAll({ includeUncontrolled: true });
-          for (const client of clients) {
-            client.postMessage({
-              type: 'ROUTE_UPDATED',
-              routes: updatedRoutes,
-            });
-          }
-        }
-
-        // 최신 manifest 저장
-        await saveManifest(latestManifest);
-        cachedManifest = latestManifest;
-        await self.clients.claim();
-      } catch (error) {
-        console.error('Error fetching or processing manifest.json:', error);
-      }
-    })(),
-  );
+// 메시지 이벤트 (클라이언트와 통신)
+self.addEventListener('message', (event) => {
+  console.log('[Service Worker] Message received:', event.data);
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

@@ -38,6 +38,7 @@ function checkRouteUpdate() {
   if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data.type === 'ROUTE_UPDATED') {
+          // TODO: 만약 유저가 보고 있는 페이지가 업데이트 되었다면, 업데이트 모달을 띄워줍니다.
           const updatedRoute = event.data.route;
           showUpdateModal.value = true;
           updatedRoute.value = updatedRoute;
